@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+dist/
+coverage/
+.env*
+!.env.example
+*.pem
+*.key
+*.tsbuildinfo
+npm-debug.log*
+.DS_Store
+.vercel/
+.env.local
