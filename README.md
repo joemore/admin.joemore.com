@@ -1,8 +1,8 @@
-# joemore.com Admin · v0.0.1
+# joemore.com Admin · v0.0.2
 
 A local foundation for the joemore.com administration application: Next.js 16 App Router, React 19, strict TypeScript, Tailwind CSS v4, Lucide icons, and Supabase cookie-based authentication. The dark interface includes a responsive, collapsible sidebar, dashboard, account details, and configuration, loading, empty, and error states. Geist Sans and Geist Mono are loaded through `next/font` and served by the application.
 
-This release provides an authenticated shell and database access foundation. Content, media, analytics, registration, and membership-management features are intentionally reserved for later releases. The production workflow builds a container image; it does not install SQL, create accounts, configure servers, or configure Cloudflare.
+This release adds a Cloudflare R2 Media Library to the authenticated workspace: paginated gallery/list views, direct and multipart uploads, client-generated WebP thumbnails, immutable public URLs, metadata editing, confirmed managed deletion, stale-session cleanup, and a separate read-only bucket browser. Start with the [Media Library setup guide](docs/media-library-setup.md) for the SQL, bucket-scoped token, runtime credentials, CORS policy, and first-upload checks. Content, analytics, registration, and membership management remain future features. The production workflow builds a container image; it does not install SQL, create accounts, configure servers, or configure Cloudflare.
 
 ## Local development
 
@@ -22,6 +22,7 @@ Open [http://localhost:3000](http://localhost:3000). Without Supabase environmen
 | `npm run typecheck` | Generate route types and check TypeScript |
 | `npm test` | Run the lightweight Node test suite through `tsx` |
 | `npm run test:smoke` | Check anonymous redirects and private headers against a running local app |
+| `npm run test:media-smoke` | Check anonymous denial across every Media API endpoint |
 | `npm run build` | Produce the full server-rendered production application |
 | `npm start` | Serve the production build on port 3000 |
 
@@ -48,7 +49,7 @@ Use the existing **publishable** API key from your self-hosted stack. It begins 
 
 The application reads only `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Restart development after changes; rebuild production when changing `NEXT_PUBLIC_*` values because Next.js embeds them in browser bundles. Never put a `service_role` or `sb_secret_*` key in a public environment variable.
 
-`SUPABASE_SECRET_KEY` is documented as an optional future server-only variable in `.env.example`. Leave it unset: this release never reads it. Normal database calls use the signed-in user's session and RLS. Never add a secret key to a `NEXT_PUBLIC_*` variable, commit credentials, or log passwords or session tokens. `.env*` files are ignored except `.env.example`.
+The Media Library requires `SUPABASE_SECRET_KEY` and the server-only R2 variables listed in [`.env.example`](.env.example). The secret is used only for protected internal media writes after a fresh user/admin check; browser clients cannot assign storage keys, ownership, or upload states. Browsing and metadata editing use the signed-in session and RLS. Add these secrets only to the trusted runtime environment, never Docker build arguments or public variables. The existing workspace still builds and runs without media credentials and shows a configuration-required state. Never commit credentials or log passwords, signed URLs, or session tokens. `.env*` files are ignored except `.env.example`.
 
 ### Connect to the existing self-hosted stack
 
@@ -72,6 +73,7 @@ In your self-hosted **Supabase Studio → SQL Editor**, run each complete file s
 
 1. [`supabase/schemas/001_admin_users.sql`](supabase/schemas/001_admin_users.sql)
 2. [`supabase/schemas/002_admin_access.sql`](supabase/schemas/002_admin_access.sql)
+3. [`supabase/schemas/003_media_assets.sql`](supabase/schemas/003_media_assets.sql) — Media Library table, RLS, column privileges, and immutable storage identity. If steps 1–2 are already installed, run only step 3.
 
 The scripts are transactional and intentionally fail if their application objects already exist. Inspect existing objects and ownership rather than blindly dropping or replacing them. Ensure `public` is available through the Data API and `private` is **not** an exposed schema. These scripts do not change your API configuration.
 

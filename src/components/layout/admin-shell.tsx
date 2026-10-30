@@ -59,16 +59,16 @@ function Navigation({
         <span>Content</span>
         <small>Soon</small>
       </button>
-      <button
-        type="button"
-        className="nav-item nav-disabled"
-        disabled
-        title="Media is planned for a future release"
+      <Link
+        onClick={onNavigate}
+        className={`nav-item ${pathname === "/dashboard/media" ? "active" : ""}`}
+        aria-current={pathname === "/dashboard/media" ? "page" : undefined}
+        href="/dashboard/media"
+        title={compact ? "Media library" : undefined}
       >
         <ImageIcon size={18} />
         <span>Media library</span>
-        <small>Soon</small>
-      </button>
+      </Link>
       <span className="nav-section-label nav-section-spaced">
         ADMINISTRATION
       </span>
@@ -96,8 +96,9 @@ export function AdminShell({
   const [collapsed, setCollapsed] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const pathname = usePathname();
-  const title =
-    pathname === "/dashboard/access" ? "Access & security" : "Overview";
+  const title = pathname === "/dashboard/access"
+    ? "Access & security"
+    : pathname === "/dashboard/media" ? "Media library" : "Overview";
   const initial = (admin.email.charAt(0) || "A").toUpperCase();
   return (
     <div className={`admin-shell ${collapsed ? "shell-collapsed" : ""}`}>
@@ -118,7 +119,7 @@ export function AdminShell({
                 <br />
                 Built to grow with you.
               </p>
-              <span className="font-mono">v0.0.1</span>
+              <span className="font-mono">v0.0.2</span>
             </div>
           )}
           <a
@@ -221,7 +222,7 @@ export function AdminShell({
           <span>Made for a little more.</span>
           <span>
             joemore.com Admin<span className="footer-separator">/</span>
-            <span className="font-mono">v0.0.1</span>
+            <span className="font-mono">v0.0.2</span>
           </span>
           <Link
             href="/dashboard/access"

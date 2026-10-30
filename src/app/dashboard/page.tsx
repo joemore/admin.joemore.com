@@ -120,7 +120,7 @@ export default async function DashboardPage() {
               <h2>Your workspace</h2>
               <p>The essentials, with more to come.</p>
             </div>
-            <Badge>2 planned modules</Badge>
+            <Badge>1 planned module</Badge>
           </div>
           <div className="module-grid">
             <Panel className="module-card">
@@ -142,16 +142,16 @@ export default async function DashboardPage() {
               <span className="module-icon module-icon-violet">
                 <ImageIcon size={22} strokeWidth={1.5} />
               </span>
-              <Badge>Coming later</Badge>
+              <Badge tone="accent">Available now</Badge>
               <h3>Media library</h3>
               <p>
                 Your visual world, thoughtfully organised. One place for every
                 asset.
               </p>
-              <div className="module-footer">
-                <span>Not available in this release</span>
-                <LockKeyhole size={13} />
-              </div>
+              <Link href="/dashboard/media" className="module-footer text-link">
+                <span>Open media library</span>
+                <ArrowRight size={14} />
+              </Link>
             </Panel>
           </div>
           <Panel className="activity-panel">

@@ -1,6 +1,6 @@
 {
   "name": "admin.joemore.com",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "The private administration workspace for joemore.com",
   "scripts": {
     "dev": "next dev --webpack",
@@ -10,11 +10,14 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
-    "test:smoke": "node scripts/smoke.mjs"
+    "test:smoke": "node scripts/smoke.mjs",
+    "test:media-smoke": "node scripts/media-smoke.mjs"
   },
   "license": "UNLICENSED",
   "type": "module",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1160.0",
+    "@aws-sdk/s3-request-presigner": "^3.1160.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.118.0",
     "geist": "^1.8.2",

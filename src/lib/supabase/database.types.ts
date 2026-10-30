@@ -1,4 +1,6 @@
-/** v0.0.1 schema contract; update alongside supabase/schemas changes. */
+import type { MediaAsset } from "../media/types";
+
+/** Schema contract; update alongside supabase/schemas changes. */
 export type AdminRole = "super_admin" | "admin" | "editor";
 
 export type AdminMembership = {
@@ -12,6 +14,12 @@ export type AdminMembership = {
 export type Database = {
   public: {
     Tables: {
+      media_assets: {
+        Row: MediaAsset;
+        Insert: MediaAsset;
+        Update: Partial<MediaAsset>;
+        Relationships: [];
+      };
       admin_users: {
         Row: AdminMembership;
         Insert: {
