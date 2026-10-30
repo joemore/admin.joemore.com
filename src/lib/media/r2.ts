@@ -33,14 +33,15 @@ export function isR2Collision(error: unknown): boolean { return statusCode(error
 function statusCode(error: unknown): number | undefined { return (error as { $metadata?: { httpStatusCode?: number } })?.$metadata?.httpStatusCode; }
 export const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
 
-export function createR2Operations(config: MediaConfig): R2Operations {
+export function createR2Operations(config: MediaConfig, options: { cacheControl?: string } = {}): R2Operations {
   const client = new S3Client({
     region: "auto", endpoint: `https://${config.accountId}.r2.cloudflarestorage.com`,
     credentials: { accessKeyId: config.accessKeyId, secretAccessKey: config.secretAccessKey },
     requestChecksumCalculation: "WHEN_REQUIRED", responseChecksumValidation: "WHEN_REQUIRED",
   });
   const object = (key: string) => ({ Bucket: config.bucket, Key: key });
-  const upload = (input: ObjectUpload) => ({ ...object(input.key), ContentType: input.mimeType, ContentDisposition: input.disposition, CacheControl: IMMUTABLE_CACHE_CONTROL, Metadata: { "asset-id": input.assetId } });
+  const cacheControl = options.cacheControl ?? IMMUTABLE_CACHE_CONTROL;
+  const upload = (input: ObjectUpload) => ({ ...object(input.key), ContentType: input.mimeType, ContentDisposition: input.disposition, CacheControl: cacheControl, Metadata: { "asset-id": input.assetId } });
   return {
     async head(key) {
       try {
@@ -52,7 +53,7 @@ export function createR2Operations(config: MediaConfig): R2Operations {
       await client.send(new PutObjectCommand({ ...upload(input), Body: new Uint8Array(), IfNoneMatch: "*", CacheControl: "no-store", Metadata: { "asset-id": input.assetId, reservation: "1" } }));
     },
     async signPut(input) {
-      const headers = { "Content-Type": input.mimeType, "Content-Disposition": input.disposition, "Cache-Control": IMMUTABLE_CACHE_CONTROL, "If-None-Match": "*", "x-amz-meta-asset-id": input.assetId };
+      const headers = { "Content-Type": input.mimeType, "Content-Disposition": input.disposition, "Cache-Control": cacheControl, "If-None-Match": "*", "x-amz-meta-asset-id": input.assetId };
       const names = new Set([...Object.keys(headers).map((key) => key.toLowerCase()), "content-length"]);
       const url = await getSignedUrl(client, new PutObjectCommand({ ...upload(input), IfNoneMatch: "*", ContentLength: input.size }), { expiresIn: config.signedUrlSeconds, unhoistableHeaders: names, signableHeaders: names });
       return { url, headers };

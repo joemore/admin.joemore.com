@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ArrowUpRight,
+  Camera,
   ChevronDown,
   ChevronRight,
   CircleHelp,
@@ -69,6 +70,16 @@ function Navigation({
         <ImageIcon size={18} />
         <span>Media library</span>
       </Link>
+      <Link
+        onClick={onNavigate}
+        className={`nav-item ${pathname.startsWith("/photography") ? "active" : ""}`}
+        aria-current={pathname.startsWith("/photography") ? "page" : undefined}
+        href="/photography"
+        title={compact ? "Photography" : undefined}
+      >
+        <Camera size={18} />
+        <span>Photography</span>
+      </Link>
       <span className="nav-section-label nav-section-spaced">
         ADMINISTRATION
       </span>
@@ -98,6 +109,7 @@ export function AdminShell({
   const pathname = usePathname();
   const title = pathname === "/dashboard/access"
     ? "Access & security"
+    : pathname.startsWith("/photography") ? "Photography"
     : pathname === "/dashboard/media" ? "Media library" : "Overview";
   const initial = (admin.email.charAt(0) || "A").toUpperCase();
   return (
@@ -119,7 +131,7 @@ export function AdminShell({
                 <br />
                 Built to grow with you.
               </p>
-              <span className="font-mono">v0.0.2</span>
+              <span className="font-mono">v0.0.3</span>
             </div>
           )}
           <a
@@ -222,7 +234,7 @@ export function AdminShell({
           <span>Made for a little more.</span>
           <span>
             joemore.com Admin<span className="footer-separator">/</span>
-            <span className="font-mono">v0.0.2</span>
+            <span className="font-mono">v0.0.3</span>
           </span>
           <Link
             href="/dashboard/access"

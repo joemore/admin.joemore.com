@@ -183,3 +183,7 @@ docker run --rm -p 127.0.0.1:3000:3000 admin-joemore-com:local
 The workflow builds for the GitHub-hosted runner's default Linux architecture. If your server uses a different CPU architecture, configure a matching Buildx platform before publishing. GHCR package visibility and your server's container, reverse proxy, and Watchtower settings are managed separately.
 
 Outstanding owner tasks are to configure the repository secrets and `prod` branch, confirm the publishable key and backend connection, install the reviewed SQL manually, create and bootstrap the personal administrator, and complete live authentication/database checks. No server configuration or live database changes are included.
+
+## Photography Manager · v0.0.3
+
+Photography is available at `/photography`, with private draft imports, EXIF editing, reusable tags, albums, bulk edits and explicit CDN publication. See [Photography setup](docs/photography-setup.md) for schema 004, private R2 bucket/CORS configuration, first import, original-download rules and the future public-read contract. No public gallery is included.

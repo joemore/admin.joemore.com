@@ -9,6 +9,7 @@ Nothing here runs automatically. Application startup and `npm test` never apply 
 1. `001_admin_users.sql` — membership table, constraints, indexes, grants, own-row SELECT policy and RLS.
 2. `002_admin_access.sql` — private schema and current-identity helper.
 3. `003_media_assets.sql` — managed-media metadata, protected storage identity, upload lifecycle fields, active-admin RLS, and restricted metadata-edit grants.
+4. `004_photography.sql` — private photography metadata, reusable tags, albums, transactional metadata/bulk assignment and ordering RPCs, and admin-only read policies. Existing v0.0.2 installations need only this new file. Review [Photography setup](../../docs/photography-setup.md) before enabling imports.
 
 For an existing v0.0.1 installation, install only step 3 after review; do not rerun steps 1 and 2. The full R2 credentials, CORS, caching, cleanup, and first-upload procedure is in [Media Library setup](../../docs/media-library-setup.md). No schema file imports or mutates existing R2 objects.
 
@@ -57,5 +58,7 @@ The suite checks RLS, grants, own-row visibility, active access for all supporte
 After step 3, [media_security.sql](../tests/media_security.sql) is a separate manual suite for an isolated test database. It checks anonymous, ordinary-user, active-member and inactive-member access; the metadata-only column grants; forbidden ownership/key/status writes; timestamp handling; and privileged-write identity constraints. It needs two existing Auth UUIDs and ends with ROLLBACK. Neither SQL suite runs as part of `npm test`, and neither has been executed against your live database.
 
 Also manually test real Auth and HTTP behavior with the configured application: invalid credentials, expired sessions, sign out, a non-member account, deactivation/reactivation, and loss of backend connectivity. SQL assertions do not validate the API gateway, key compatibility, cookies, or browser caching. These remain unverified until your backend and credentials are available.
+
+After step 4, [photography_security.sql](../tests/photography_security.sql) checks the five tables' RLS and grants, anonymous/non-member/revoked-member denial, browser-write and RPC denial, individual download review, atomic metadata edits and additive bulk assignment, optimistic conflicts, ordered albums and rollback after invalid memberships. It also proves album deletion preserves photographs. Supply two existing test Auth UUIDs and retain the final ROLLBACK. This suite was run successfully against an isolated temporary PostgreSQL cluster with local Supabase-role/Auth stubs; it has not been run against the live Supabase project or its API gateway.
 
 References: [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [function security](https://supabase.com/docs/guides/database/functions#security-definer-vs-invoker), and [PostgreSQL privileges](https://www.postgresql.org/docs/current/ddl-priv.html).

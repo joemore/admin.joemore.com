@@ -53,7 +53,7 @@ export async function mediaRoute(request: Request, work: (context: MediaContext)
   }
 }
 
-export async function mediaBody(request: Request): Promise<Record<string, unknown>> {
+export async function mediaBody(request: Request, maxBytes = 16 * 1024): Promise<Record<string, unknown>> {
   const reader = request.body?.getReader();
   if (!reader) throw new MediaError("A JSON metadata body is required.");
   let size = 0;
@@ -63,7 +63,7 @@ export async function mediaBody(request: Request): Promise<Record<string, unknow
       const { done, value } = await reader.read();
       if (done) break;
       size += value.byteLength;
-      if (size > 16 * 1024) { await reader.cancel(); throw new MediaError("Metadata request is too large.", 413); }
+      if (size > maxBytes) { await reader.cancel(); throw new MediaError("Metadata request is too large.", 413); }
       chunks.push(value);
     }
     const body: unknown = JSON.parse(Buffer.concat(chunks).toString("utf8"));
