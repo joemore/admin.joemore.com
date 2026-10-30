@@ -36,7 +36,7 @@ export default async function LoginPage() {
           <p>
             {config.reason === "missing"
               ? "Add your Supabase connection to enable sign in."
-              : "Check your Supabase URL and anon key to enable sign in."}
+              : "Check your Supabase URL and publishable key to enable sign in."}
           </p>
           <details>
             <summary>
@@ -48,7 +48,8 @@ export default async function LoginPage() {
                 Copy <code>.env.example</code> to <code>.env.local</code>.
               </li>
               <li>
-                Set <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> to your existing anon key.
+                Set <code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> to your
+                existing publishable key.
               </li>
               <li>Install the SQL and add your administrator UUID.</li>
               <li>Restart the development server.</li>

@@ -46,6 +46,32 @@ for (const [path, status, location] of cases) {
       );
       assert.match(html, /<button[^>]*disabled[^>]*>Sign in to your workspace/);
     }
+    if (process.argv.includes("--expect-configured")) {
+      assert.ok(
+        !html.includes("Your workspace is almost ready"),
+        "The image is missing its Supabase build configuration",
+      );
+      const submit = html.match(/<button\b[^>]*>Sign in to your workspace/);
+      assert.ok(
+        submit && !/\bdisabled(?:\s|=|>)/.test(submit[0]),
+        "Sign-in should be enabled",
+      );
+    }
+    const stylesheet = html.match(
+      /href="(\/_next\/static\/[^\"]+\.css(?:\?[^\"]*)?)"/,
+    );
+    assert.ok(stylesheet, "Login page must reference a built stylesheet");
+    const asset = await fetch(
+      `${base}${stylesheet[1].replaceAll("&amp;", "&")}`,
+      { signal: AbortSignal.timeout(30_000) },
+    );
+    assert.equal(
+      asset.status,
+      200,
+      "Standalone image must serve its static assets",
+    );
+    assert.match(asset.headers.get("content-type") ?? "", /text\/css/);
+    await asset.body?.cancel();
   } else {
     await response.body?.cancel();
   }

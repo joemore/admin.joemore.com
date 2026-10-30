@@ -33,7 +33,7 @@ For a future content table, enable RLS, set explicit grants, then use a policy s
 2. In Studio → Authentication → Users, manually create your personal email/password account and confirm its email according to your Auth configuration. There is no registration UI in this application.
 3. Copy the exact UUID from that Auth user. Do not use an email or metadata field as identity.
 4. Open `supabase/bootstrap.example.sql`, replace `<YOUR_AUTH_USER_UUID>`, and run its INSERT and verification SELECT from the trusted SQL Editor. Review that only your intended account has `super_admin`. Run the INSERT once; duplicate membership intentionally fails for review.
-5. Configure the application's legacy anon key, restart it, and sign in at `/login`. Refresh a protected page to verify server authorization.
+5. Configure the application's publishable key, restart it, and sign in at `/login`. Refresh a protected page to verify server authorization.
 6. Separately run the commented deactivation UPDATE for that exact UUID, then reload the dashboard. Access must be denied even while the Auth session remains valid.
 7. Reactivate the same UUID with the commented reactivation UPDATE using the trusted SQL Editor; sign in again or reload as appropriate. The browser cannot perform this step.
 

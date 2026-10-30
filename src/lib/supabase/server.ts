@@ -13,7 +13,7 @@ export async function createServerSupabaseClient(options?: {
   if (!config.configured) return null;
 
   const cookieStore = await cookies();
-  return createServerClient<Database>(config.url, config.anonKey, {
+  return createServerClient<Database>(config.url, config.publishableKey, {
     cookieOptions: {
       path: "/",
       sameSite: "lax",

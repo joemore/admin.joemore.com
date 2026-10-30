@@ -2,7 +2,7 @@
 
 A local foundation for the joemore.com administration application: Next.js 16 App Router, React 19, strict TypeScript, Tailwind CSS v4, Lucide icons, and Supabase cookie-based authentication. The dark interface includes a responsive, collapsible sidebar, dashboard, account details, and configuration, loading, empty, and error states. Geist Sans and Geist Mono are loaded through `next/font` and served by the application.
 
-This release provides an authenticated shell and database access foundation. Content, media, analytics, registration, and membership-management features are intentionally reserved for later releases. Nothing in the application automatically installs SQL, creates accounts, deploys infrastructure, or configures Cloudflare.
+This release provides an authenticated shell and database access foundation. Content, media, analytics, registration, and membership-management features are intentionally reserved for later releases. The production workflow builds a container image; it does not install SQL, create accounts, configure servers, or configure Cloudflare.
 
 ## Local development
 
@@ -41,24 +41,24 @@ Set these values:
 
 ```dotenv
 NEXT_PUBLIC_SUPABASE_URL=https://api-supabase.joemore.com
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<YOUR_EXISTING_ANON_KEY>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<YOUR_EXISTING_PUBLISHABLE_KEY>
 ```
 
-Use the existing legacy **anon** API key from your self-hosted stack. This is an HS256-signed JWT, usually beginning with `eyJ`, whose payload has `role: "anon"`. The app checks its format and role to catch configuration mistakes; Supabase verifies the signature and key validity. This format check never grants administrator access. Secret keys, `service_role` keys, user-session JWTs, malformed values, and the newer opaque API keys are rejected. Missing or invalid settings produce a configuration state instead of an initialization crash.
+Use the existing **publishable** API key from your self-hosted stack. It begins with `sb_publishable_` and is intended for public clients. The app checks its format to catch configuration mistakes; Supabase verifies that the key is valid. This format check never grants administrator access. Secret keys, legacy JWT keys, user-session JWTs and malformed values are rejected. Missing or invalid settings produce a configuration state instead of an initialization crash.
 
-The application reads only `NEXT_PUBLIC_SUPABASE_ANON_KEY`; remove the previous publishable-key setting from your local configuration. Restart development after changes; rebuild production when changing `NEXT_PUBLIC_*` values because Next.js embeds them in browser bundles. Never put a `service_role` key in a public environment variable.
+The application reads only `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Restart development after changes; rebuild production when changing `NEXT_PUBLIC_*` values because Next.js embeds them in browser bundles. Never put a `service_role` or `sb_secret_*` key in a public environment variable.
 
 `SUPABASE_SECRET_KEY` is documented as an optional future server-only variable in `.env.example`. Leave it unset: this release never reads it. Normal database calls use the signed-in user's session and RLS. Never add a secret key to a `NEXT_PUBLIC_*` variable, commit credentials, or log passwords or session tokens. `.env*` files are ignored except `.env.example`.
 
 ### Connect to the existing self-hosted stack
 
-This application uses your stack's existing `ANON_KEY` as `NEXT_PUBLIC_SUPABASE_ANON_KEY`. No backend upgrade, new-key generation, or gateway configuration change is required by this application change. Legacy anon keys are the public client keys for older Supabase installations; see [Supabase API keys](https://supabase.com/docs/guides/getting-started/api-keys) and the [self-hosted key guide](https://supabase.com/docs/guides/self-hosting/self-hosted-auth-keys).
+This application uses the `sb_publishable_*` key from your updated self-hosted stack as `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. The gateway must recognize the configured key. See [Supabase API keys](https://supabase.com/docs/guides/getting-started/api-keys) and the [self-hosted key guide](https://supabase.com/docs/guides/self-hosting/self-hosted-auth-keys).
 
-Use your existing anon key in this optional read-only check:
+Use your existing publishable key in this optional read-only check:
 
 ```sh
 curl --fail-with-body \
-  -H 'apikey: <YOUR_EXISTING_ANON_KEY>' \
+  -H 'apikey: <YOUR_EXISTING_PUBLISHABLE_KEY>' \
   https://api-supabase.joemore.com/auth/v1/settings
 ```
 
@@ -82,7 +82,7 @@ The scripts are transactional and intentionally fail if their application object
 1. In **Studio → Authentication → Users**, manually create your personal email/password user. Complete or confirm the email using Studio's trusted administrative controls as appropriate for your Auth setup. There is no registration screen in this app.
 2. Copy the user's exact **Auth UUID** from that user's record. An email address is not a membership identity.
 3. Open [`supabase/bootstrap.example.sql`](supabase/bootstrap.example.sql). Replace every `<YOUR_AUTH_USER_UUID>` placeholder with that UUID. Review the `INSERT` and verification `SELECT`, then execute them in Studio's SQL Editor as the trusted database administrator. Run the deactivation and reactivation examples separately when needed.
-4. Supply the existing anon key in your local `.env.local`, restart the application, and visit `/login`.
+4. Supply the existing publishable key in your local `.env.local`, restart the application, and visit `/login`.
 5. Sign in using the account you created. The dashboard should show your account and `super_admin` role.
 6. Sign out. A fresh request to `/dashboard` must redirect to `/login`.
 7. Sign in again. In the trusted SQL Editor, run the example's `is_active = false` update for **only your UUID**. Refresh `/dashboard`; access must be denied on the next server request.
@@ -144,11 +144,11 @@ The SQL assertions in [`supabase/tests/admin_security.sql`](supabase/tests/admin
 
 Before using this with real data, manually verify actual sign-in, unauthenticated redirects, non-admin and inactive denial, successful active-admin access, sign-out, expired-session refresh, and loss of backend connectivity. No passing live integration results are claimed without those checks and configured credentials.
 
-Local implementation verification passed: ESLint, strict TypeScript, 33 offline unit tests, the production build, and all seven HTTP smoke checks including missing-configuration rendering. Desktop/mobile layouts and navigation were checked in a browser; the protected dashboard used a temporary display-only fixture outside application routes, removed after inspection. Core text colors and primary button states were checked for WCAG AA contrast. The SQL suite has been reviewed but has not been executed.
+Local implementation verification passed: ESLint, strict TypeScript, offline unit tests, and the production build. The initial interface verification also passed all seven HTTP smoke checks including missing-configuration rendering. Desktop/mobile layouts and navigation were checked in a browser; the protected dashboard used a temporary display-only fixture outside application routes, removed after inspection. Core text colors and primary button states were checked for WCAG AA contrast. The SQL suite has been reviewed but has not been executed.
 
 ## Production start and future hosting
 
-This is a full Next.js server application; no static export is configured. For a future Ubuntu deployment, provide the environment securely, install the locked dependencies, then run:
+This is a full Next.js server application; `output: "standalone"` packages a minimal server for Docker without using a static export. To run it directly on a Node.js host, provide the environment securely, install the locked dependencies, then run:
 
 ```sh
 npm ci
@@ -158,4 +158,26 @@ npm start
 
 Use HTTPS, preserve cookie and no-store headers, and configure an appropriate process manager and reverse proxy separately. Review Auth rate limits, session lifetime, allowed origins, backups, monitoring, and security updates before production use. Cloudflare Access may later add an outer layer; the application's server authorization and RLS remain necessary.
 
-Outstanding owner tasks are to confirm the existing anon key and backend connection, install the reviewed SQL manually, create and bootstrap the personal administrator, supply the anon key locally, and complete live authentication/database checks. No deployment automation, GitHub repository, backend configuration, or live database changes are included.
+### GitHub Actions, GHCR, and Watchtower
+
+The [production workflow](.github/workflows/prod.yml) follows the main website's approach: a push to `prod` builds a Node 24 Docker image, then publishes `ghcr.io/joemore/admin-joemore-com:prod` and the same image tagged with the full commit SHA. A manual workflow run is restricted to `prod`. It runs lint, type checking, unit tests, a production build, and an anonymous HTTP/static-assets smoke test inside the built container **before** either tag is pushed. The `prod` tag is pushed last so a failed build or smoke test cannot publish a broken update to Watchtower.
+
+Before the first run:
+
+1. In the admin GitHub repository, open **Settings → Secrets and variables → Actions → Secrets** and add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` using the existing URL and publishable key. If you previously configured the legacy anon-key secret, replace it with the publishable-key secret. Do not put a `service_role` or secret key in these settings. The workflow uses GitHub's automatically supplied `GITHUB_TOKEN` with package-write permission for GHCR.
+2. Ensure the admin repository has a `prod` branch containing this workflow and the intended application changes, then push that branch. The repository did not have a `prod` branch when this workflow was prepared. The first push publishes the image. The **Run workflow** button is available once this workflow also exists on the default branch; choose `prod` for a manual run.
+3. The server must already have an admin container created from `ghcr.io/joemore/admin-joemore-com:prod` and be included in Watchtower's monitoring. Watchtower updates a matching existing container; publishing an image does not create the initial container. If the GHCR package is private, the server and Watchtower also need credentials permitted to pull that package. Check any existing Watchtower label filters and registry authentication as part of the server's separate setup.
+4. Confirm the workflow succeeds, the server pulls the new `:prod` image, and login plus the active administrator membership work against the configured Supabase instance. The workflow smoke test is offline and does not establish a real Supabase session.
+
+The two `NEXT_PUBLIC_*` values are **public client configuration**. Next.js embeds them into the image and browser bundle during `next build`; changing only the running container's environment cannot update them. Change the repository Actions secrets and build/publish a new image when either value changes. The Docker build deliberately fails when these values are missing or fail the application's publishable-key format check. A private key or service-role key must never be passed as a build argument or public variable.
+
+For a local Docker build, export those two public values in your shell first and run:
+
+```sh
+docker build --build-arg NEXT_PUBLIC_SUPABASE_URL --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY -t admin-joemore-com:local .
+docker run --rm -p 127.0.0.1:3000:3000 admin-joemore-com:local
+```
+
+The workflow builds for the GitHub-hosted runner's default Linux architecture. If your server uses a different CPU architecture, configure a matching Buildx platform before publishing. GHCR package visibility and your server's container, reverse proxy, and Watchtower settings are managed separately.
+
+Outstanding owner tasks are to configure the repository secrets and `prod` branch, confirm the publishable key and backend connection, install the reviewed SQL manually, create and bootstrap the personal administrator, and complete live authentication/database checks. No server configuration or live database changes are included.

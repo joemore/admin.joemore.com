@@ -12,7 +12,7 @@ export async function proxy(request: NextRequest) {
   if (configuration.configured) {
     const client = createServerClient<Database>(
       configuration.url,
-      configuration.anonKey,
+      configuration.publishableKey,
       {
         cookieOptions: {
           path: "/",

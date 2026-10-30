@@ -9,7 +9,7 @@ export function createBrowserSupabaseClient() {
   const config = getSupabaseConfig();
   if (!config.configured) return null;
 
-  return createBrowserClient<Database>(config.url, config.anonKey, {
+  return createBrowserClient<Database>(config.url, config.publishableKey, {
     cookieOptions: {
       path: "/",
       sameSite: "lax",
