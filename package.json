@@ -9,7 +9,7 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
-    "check": "npm run lint && npm run typecheck && npm test && npm run build",
+    "check": "yarn lint && yarn typecheck && yarn test && yarn build",
     "test:smoke": "node scripts/smoke.mjs",
     "test:media-smoke": "node scripts/media-smoke.mjs",
     "test:photography-smoke": "node scripts/photography-smoke.mjs"

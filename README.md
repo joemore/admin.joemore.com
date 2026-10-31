@@ -6,25 +6,27 @@ This release adds a Cloudflare R2 Media Library to the authenticated workspace: 
 
 ## Local development
 
-Use a supported Node.js 22 release or newer and npm. Run all commands from this directory:
+Use a supported Node.js 22 release or newer and Yarn (the pinned version is included in this repository). Run all commands from this directory:
 
 ```sh
-npm ci
-npm run dev
+yarn
+yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Without Supabase environment variables, the login page explains the configuration steps and the dashboard remains protected. A real backend connection is unnecessary for lint, type checks, unit tests, or a production build.
+Use the local URL printed by `yarn dev`. It starts at [http://localhost:3000](http://localhost:3000) and automatically tries 3001, 3002, and subsequent ports when another project is already running. Leave `PORT` and `--port` unset for automatic selection; `PORT=3100 yarn dev` requests a fixed port.
+
+Without Supabase environment variables, the login page explains the configuration steps and the dashboard remains protected. A real backend connection is unnecessary for lint, type checks, unit tests, or a production build.
 
 | Command | Purpose |
 | --- | --- |
-| `npm run dev` | Start local Next.js development |
-| `npm run lint` | Run ESLint |
-| `npm run typecheck` | Generate route types and check TypeScript |
-| `npm test` | Run the lightweight Node test suite through `tsx` |
-| `npm run test:smoke` | Check anonymous redirects and private headers against a running local app |
-| `npm run test:media-smoke` | Check anonymous denial across every Media API endpoint |
-| `npm run build` | Produce the full server-rendered production application |
-| `npm start` | Serve the production build on port 3000 |
+| `yarn dev` | Start local Next.js development |
+| `yarn lint` | Run ESLint |
+| `yarn typecheck` | Generate route types and check TypeScript |
+| `yarn test` | Run the lightweight Node test suite through `tsx` |
+| `yarn test:smoke` | Check anonymous redirects and private headers against a running local app |
+| `yarn test:media-smoke` | Check anonymous denial across every Media API endpoint |
+| `yarn build` | Produce the full server-rendered production application |
+| `yarn start` | Serve the production build on port 3000 |
 
 Geist Sans and Geist Mono come from the official `geist` package through `next/font/local`. Both builds and browsers use local font files, without contacting Google Fonts. Dependency installation requires npm registry access.
 
@@ -132,13 +134,13 @@ prompts/01.md            Original v0.0.1 brief
 Run the local checks after changes:
 
 ```sh
-npm run lint
-npm run typecheck
-npm test
-npm run build
+yarn lint
+yarn typecheck
+yarn test
+yarn build
 ```
 
-After building, start `npm start -- --hostname 127.0.0.1` in one terminal. In a second terminal, run `npm run test:smoke`. For a checkout without credentials, `npm run test:smoke -- --expect-configuration` also verifies the disabled sign-in setup state. This performs seven loopback HTTP checks without supplying a session. It does not test authenticated backend flows.
+After building, start `yarn start --hostname 127.0.0.1` in one terminal. In a second terminal, run `yarn test:smoke`. For a checkout without credentials, `yarn test:smoke --expect-configuration` also verifies the disabled sign-in setup state. This performs seven loopback HTTP checks without supplying a session. It does not test authenticated backend flows.
 
 Unit tests use stubs rather than connecting to Supabase. They exercise configuration validation, form validation, and access decisions for signed-out users, missing/inactive memberships, permitted roles, and backend failures. They cannot establish that a real gateway, database policy, token refresh, or session revocation works on your installation.
 
@@ -153,9 +155,9 @@ Local implementation verification passed: ESLint, strict TypeScript, offline uni
 This is a full Next.js server application; `output: "standalone"` packages a minimal server for Docker without using a static export. To run it directly on a Node.js host, provide the environment securely, install the locked dependencies, then run:
 
 ```sh
-npm ci
-npm run build
-npm start
+yarn
+yarn build
+yarn start
 ```
 
 Use HTTPS, preserve cookie and no-store headers, and configure an appropriate process manager and reverse proxy separately. Review Auth rate limits, session lifetime, allowed origins, backups, monitoring, and security updates before production use. Cloudflare Access may later add an outer layer; the application's server authorization and RLS remain necessary.
